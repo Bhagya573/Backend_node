@@ -9,6 +9,7 @@ const path = require('path');
 const os = require('os');
 const EventEmitter = require('events');
 const { URL } = require('url');
+const async_hooks = require('async_hooks'); // Importing Async Hooks
 require('dotenv').config();
 
 const app = express();
@@ -19,6 +20,26 @@ const eventEmitter = new EventEmitter();
 
 // Set up multer configuration for file uploads
 const upload = setupMulter();
+
+// Async Hook for tracking async operations
+const asyncData = new Map();
+const hook = async_hooks.createHook({
+  init(asyncId, type, triggerAsyncId, resource) {
+    asyncData.set(asyncId, { type, triggerAsyncId, resource });
+  },
+  before(asyncId) {
+    const data = asyncData.get(asyncId);
+    console.log(`Before running ${data.type} with ID: ${asyncId}`);
+  },
+  after(asyncId) {
+    const data = asyncData.get(asyncId);
+    console.log(`Completed ${data.type} with ID: ${asyncId}`);
+  },
+  destroy(asyncId) {
+    asyncData.delete(asyncId);
+  }
+});
+hook.enable(); // Enable Async Hooks
 
 // Middleware setup
 app.use(cors());
@@ -54,10 +75,9 @@ function setupMulter() {
     destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => cb(null, file.originalname),
   });
-
   return multer({
     storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    limits: { fileSize: 10 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
       const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
       cb(null, allowedTypes.includes(file.mimetype));

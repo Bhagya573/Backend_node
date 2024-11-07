@@ -2,8 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const os = require('os'); // OS module
-
+const os = require('os');
 const tasksFilePath = path.join(__dirname, '../tasks.json');
 
 // Helper function to read tasks from the JSON file
@@ -12,12 +11,13 @@ const readTasksFromFile = () => {
     if (!fs.existsSync(tasksFilePath)) {
       fs.writeFileSync(tasksFilePath, JSON.stringify([])); // Create the file if it doesn't exist
     }
-    return JSON.parse(fs.readFileSync(tasksFilePath, 'utf8')); // Return parsed tasks from file
+    return JSON.parse(fs.readFileSync(tasksFilePath, 'utf8'));
   } catch (error) {
     console.error("Error reading tasks from file:", error);
     throw new Error('Failed to read tasks');
   }
 };
+
 
 // Helper function to write tasks to the JSON file
 const writeTasksToFile = (tasks) => {
