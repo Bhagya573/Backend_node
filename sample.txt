@@ -1,0 +1,3 @@
+This is a sample text file.
+It will be read using streams in Node.js.
+
