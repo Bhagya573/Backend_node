@@ -1,5 +1,38 @@
-const { searchBooksDetails, getAllBooksFromDB, getBookByIdFromDB, createBookInDB, updateBookInDB, deleteBookFromDB } = require('../resolver/bookResolver');
+const { searchBooksDetails, getAllBooksFromDB, getBookByIdFromDB, createBookInDB, updateBookInDB, deleteBookFromDB, uploadFile } = require('../resolver/bookResolver');
+const multer = require('multer');
 
+//Set up multer storage configuration
+let uploadStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null,'uploads/')
+    },
+    filename : function (req,file,cb) {
+        cb(null, Date.now() +'_'+ file.originalname)
+    }
+})
+const upload = multer({storage:uploadStorage})
+
+// Search books by title, author, genre, and optionally by year
+const uploadFiles = async (req, res, next) => {
+    try {
+        await upload.single('file')(req, res, (err) => {
+            if (err) {
+                throw err;
+            }
+            if (!req.file) {
+                const error = new Error('No file uploaded');
+                error.statusCode = 400;
+                throw error;
+              }
+        })
+        res.status(200).json({
+            message: 'File uploaded successfully!',
+            file: req.file
+          });
+    } catch (err) {
+         next(err);
+    }
+};
 // Search books by title, author, genre, and optionally by year
 const searchBooks = async (req, res, next) => {
     const { year, title, author, genre } = req.query;
@@ -16,7 +49,6 @@ const searchBooks = async (req, res, next) => {
 const getAllBooks = async (req, res, next) => {
     try {
         const books = await getAllBooksFromDB();
-        console.log("books",books)
         res.json(books);
     } catch (err) {
          next(err);
@@ -97,5 +129,6 @@ module.exports = {
     createBook,
     updateBook,
     deleteBook,
+    uploadFiles
 };
 

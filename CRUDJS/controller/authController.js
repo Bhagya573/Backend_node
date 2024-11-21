@@ -1,7 +1,7 @@
 // controller/authController.js
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
-
+require('dotenv').config();
 // Secret key for JWT 
 const JWT_SECRET = process.env.JWT_SECRET; 
 
@@ -46,7 +46,6 @@ const loginUser = async (req, res) => {
   if (!isPasswordMatch) {
     return res.status(400).json({ message: 'Invalid password' });
   }
-console.log(JWT_SECRET,"JWT_SECRET")
   // Create a JWT token
   const token = jwt.sign({ userId: user._id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
 
